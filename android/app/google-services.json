@@ -1,0 +1,63 @@
+{
+  "project_info": {
+    "project_number": "532623419588",
+    "project_id": "shakhi-70095",
+    "storage_bucket": "shakhi-70095.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:532623419588:android:1cda60ec1bfdeee5524191",
+        "android_client_info": {
+          "package_name": "com.dharohar"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "532623419588-4gb9ns1fafckea3h9ugefmpjl7hm3fe1.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.dharohar",
+            "certificate_hash": "5e8f16062ea3cd2c4a0d547876baa6f38cabf625"
+          }
+        },
+        {
+          "client_id": "532623419588-c74a2h517pr97l9c9kl37jktfk5d00u5.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.dharohar",
+            "certificate_hash": "159de764acf0be3ea318f1eb2fb075c78528de7e"
+          }
+        },
+        {
+          "client_id": "532623419588-cvlf9la328dkv0dpil3m2qso6395br4m.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.dharohar",
+            "certificate_hash": "6167db46ed5e042ccc2bfecb411db09252a54865"
+          }
+        },
+        {
+          "client_id": "532623419588-uire1dk88i0lq2a2fh2s75bcof2sbpfo.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDRBfv2t8skQG2zljX-orSpJA9ELpg3Z5E"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "532623419588-uire1dk88i0lq2a2fh2s75bcof2sbpfo.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
