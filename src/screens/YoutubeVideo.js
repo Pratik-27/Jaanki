@@ -1,4 +1,6 @@
-import React, {useCallback, useEffect} from 'react';
+/* eslint-disable react-native/no-inline-styles */
+/* eslint-disable react-hooks/exhaustive-deps */
+import React, {useCallback, useEffect, useState} from 'react';
 import {
   View,
   Text,
@@ -7,6 +9,7 @@ import {
   StatusBar,
   SafeAreaView,
   BackHandler,
+  ActivityIndicator,
 } from 'react-native';
 import Orientation from 'react-native-orientation-locker';
 import YouTube from 'react-native-youtube';
@@ -15,9 +18,11 @@ import {vh, vw} from '../assets/styles/main';
 function YoutubeVideo({route, navigation}) {
   useEffect(() => {
     Orientation.lockToLandscape();
-    BackHandler.removeEventListener('hardwareBackPress',backButtonHandler );
-
+    BackHandler.removeEventListener('hardwareBackPress', backButtonHandler);
+    // BackHandler.addEventListener('hardwareBackPress', backButtonHandler);
   }, []);
+
+  const [isPortrait, setIsPortrait] = useState(false);
 
   useEffect(() => {
     return () => {
@@ -29,12 +34,27 @@ function YoutubeVideo({route, navigation}) {
     BackHandler.addEventListener('hardwareBackPress', backButtonHandler);
   }, [backButtonHandler]);
 
-  const backButtonHandler = useCallback(() => {
-    navigation.goBack();
-    return false;
-  });
+  const backButtonHandler = () => {
+    setIsPortrait(true);
+    Orientation.lockToPortrait();
+    setTimeout(() => {
+      navigation.goBack();
+    }, 1000);
+    return true;
+  };
 
   const {code} = route.params;
+
+  if (isPortrait) {
+    return (
+      <View
+        style={{justifyContent: 'center', flex: 1, backgroundColor: '#9F0514'}}>
+        <ActivityIndicator size="large" color="#fff" />
+        {/* <Text style={{textAlign: 'center', color: '#fff'}}>Please wait...</Text> */}
+      </View>
+    );
+  }
+
   return (
     <SafeAreaView style={{backgroundColor: '#000'}}>
       <StatusBar hidden />

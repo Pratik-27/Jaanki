@@ -25,6 +25,7 @@ import AddUser from '../components/modals/addUser';
 import {addToFireStoreBG, addToFireStoreLM} from '../util/fireStore';
 import SKBWebSite from '../components/modals/skbSite';
 import {renderBGItem, renderLMItem} from '../components/listitems';
+import MenuButton from 'react-native-vector-icons/AntDesign';
 
 // const codes = [
 //   'JQV8MOZrN7c',
@@ -72,6 +73,7 @@ function Home({navigation, route}) {
   const {userInfo, medium} = useSelector(state => state.auth);
 
   useEffect(() => {
+    BackHandler.removeEventListener('hardwareBackPress', backButtonHandler);
     Orientation.lockToPortrait();
     if (medium === 'google') {
       setName(userInfo.given_name);
@@ -88,7 +90,7 @@ function Home({navigation, route}) {
     BackHandler.addEventListener('hardwareBackPress', backButtonHandler);
   }, [backButtonHandler]);
 
-  const backButtonHandler = useCallback(() => {
+  const backButtonHandler = () => {
     // if (isSKBSelected) {
     //   setIsSKBSelected(false);
     //   return true;
@@ -96,7 +98,7 @@ function Home({navigation, route}) {
     //   return true;
     // }
     BackHandler.exitApp();
-  });
+  };
 
   const getData = async () => {
     firestore()
@@ -268,6 +270,20 @@ function Home({navigation, route}) {
     <SafeAreaView
       style={{justifyContent: 'center', backgroundColor: '#9F0514', flex: 1}}>
       <View style={{flexDirection: 'row', flex: 0.1, height: vh(10)}}>
+        <MenuButton
+          name="menu-fold"
+          size={30}
+          style={{
+            justifyContent: 'center',
+            alignSelf: 'center',
+            paddingLeft: 10,
+            paddingTop: 5,
+          }}
+          color="#fff"
+          onPress={() => {
+            navigation.openDrawer();
+          }}
+        />
         <Text
           style={{
             fontSize: 32,
@@ -278,41 +294,6 @@ function Home({navigation, route}) {
           }}>
           जानकी
         </Text>
-        <View
-          style={{
-            flex: 0.5,
-            alignItems: 'center',
-            justifyContent: 'flex-start',
-            marginTop: 5,
-          }}>
-          <TouchableOpacity
-            onPress={() => {
-              setIsSKBSelected(true);
-            }}
-            style={{
-              flexDirection: 'row',
-              borderWidth: 1,
-              borderRadius: 5,
-              padding: 5,
-              marginTop: 5,
-              backgroundColor: '#ffdbac',
-              justifyContent: 'center',
-              alignItems: 'center',
-            }}>
-            <Image
-              source={require('../assets/images/skbLogo.jpeg')}
-              style={{
-                height: 30,
-                width: 30,
-                justifyContent: 'center',
-                marginRight: 10,
-              }}
-            />
-            <Text style={{fontSize: 24, color: '#000', textAlign: 'center'}}>
-              सखी-बहिनपा
-            </Text>
-          </TouchableOpacity>
-        </View>
       </View>
       <View
         style={{
