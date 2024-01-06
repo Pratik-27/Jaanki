@@ -66,7 +66,6 @@ function SKBWebSite({navigation}) {
           जानकी
         </Text>
       </View>
-
       <WebView
         source={{uri: 'https://www.sakhibahinpa.org/home'}}
         javaScriptEnabled
