@@ -17,7 +17,7 @@ import {
 import firestore from '@react-native-firebase/firestore';
 import Orientation from 'react-native-orientation-locker';
 import {vh, vw} from '../assets/styles/main';
-import {Modal} from 'react-native-paper';
+import {Modal, Searchbar} from 'react-native-paper';
 import {GoogleSignin} from '@react-native-google-signin/google-signin';
 import {LoginManager} from 'react-native-fbsdk';
 import {useDispatch, useSelector} from 'react-redux';
@@ -25,6 +25,10 @@ import AddUser from '../components/modals/addUser';
 import {addToFireStoreBG, addToFireStoreLM} from '../util/fireStore';
 import SKBWebSite from '../components/modals/skbSite';
 import {renderBGItem, renderLMItem} from '../components/listitems';
+import MenuButton from 'react-native-vector-icons/AntDesign';
+import SearchButton from 'react-native-vector-icons/FontAwesome';
+import BackButton from 'react-native-vector-icons/Ionicons';
+// import {SearchBar} from 'react-native-elements';
 
 // const codes = [
 //   'JQV8MOZrN7c',
@@ -54,6 +58,8 @@ function Home({navigation, route}) {
   );
   const [songList, setSongList] = useState([]);
   const [lSongList, setLSongList] = useState([]);
+  const [searchList, setSearchList] = useState([]);
+  const [searchText, setSearchText] = useState('');
   const [loading, setLoading] = useState(true);
   const [userInfoVisible, setUserInfoVisible] = useState(false);
   const [addVisible, setAddVisible] = useState(false);
@@ -62,7 +68,7 @@ function Home({navigation, route}) {
   const [artist, setArtist] = useState('');
   const [link, setLink] = useState('');
   const [error, setError] = useState('');
-  const [isSKBSelected, setIsSKBSelected] = useState(false);
+  const [searchBar, setSearchBar] = useState(false);
   const [isFirstTab, setIsFirstTab] = useState(true);
   const [isSecondTab, setIsSecondTab] = useState(false);
 
@@ -72,6 +78,7 @@ function Home({navigation, route}) {
   const {userInfo, medium} = useSelector(state => state.auth);
 
   useEffect(() => {
+    BackHandler.removeEventListener('hardwareBackPress', backButtonHandler);
     Orientation.lockToPortrait();
     if (medium === 'google') {
       setName(userInfo.given_name);
@@ -88,7 +95,7 @@ function Home({navigation, route}) {
     BackHandler.addEventListener('hardwareBackPress', backButtonHandler);
   }, [backButtonHandler]);
 
-  const backButtonHandler = useCallback(() => {
+  const backButtonHandler = () => {
     // if (isSKBSelected) {
     //   setIsSKBSelected(false);
     //   return true;
@@ -96,7 +103,7 @@ function Home({navigation, route}) {
     //   return true;
     // }
     BackHandler.exitApp();
-  });
+  };
 
   const getData = async () => {
     firestore()
@@ -129,6 +136,7 @@ function Home({navigation, route}) {
         // setUsers(users);
         // setLoading(false);
       });
+    setSearchList(songList.concat(lSongList));
     setLoading(false);
   };
 
@@ -167,6 +175,32 @@ function Home({navigation, route}) {
       return '';
     }
   }
+
+  const performSearch = text => {
+    console.log('180', text);
+    let newSearchList = [];
+    searchList.map((item, index) => {
+      console.log('183', item, index);
+      if (item.detail !== undefined && String(item.detail).includes(text)) {
+        console.log('match', item);
+        newSearchList.push(item);
+      } else if (
+        item.title !== undefined &&
+        String(item.title).includes(text)
+      ) {
+        console.log('match', item);
+        newSearchList.push(item);
+      } else if (
+        item.singer !== undefined &&
+        String(item.singer).includes(text)
+      ) {
+        console.log('match', item);
+        newSearchList.push(item);
+      }
+      return newSearchList;
+    });
+    setSearchList(newSearchList);
+  };
 
   const addUser = () => {
     console.log('124', link, artist, songTitle);
@@ -213,13 +247,40 @@ function Home({navigation, route}) {
   };
 
   const renderContent = () => {
-    if (isSKBSelected) {
-      return <SKBWebSite />;
+    if (searchBar) {
+      return (
+        <FlatList
+          data={searchList}
+          style={{
+            padding: 5,
+            flex: 0.5,
+            height: vh(40),
+            // marginTop: 65
+          }}
+          contentContainerStyle={{paddingBottom: 20}}
+          ItemSeparatorComponent={() => {
+            return <View style={{height: 5}} />;
+          }}
+          renderItem={({item, index}) => {
+            if (item.detail === undefined) {
+              return renderBGItem(item, index, navigation);
+            } else {
+              return renderLMItem(item, index, navigation);
+            }
+          }}
+        />
+      );
     } else if (isFirstTab) {
       return (
         <FlatList
           data={songList}
-          style={{padding: 5, flex: 0.7, height: vh(40), marginTop: 50}}
+          // keyExtractor={({item, index}) => index + 'firstTab'}
+          style={{
+            padding: 5,
+            flex: 0.7,
+            height: vh(40),
+            // marginTop: 50
+          }}
           contentContainerStyle={{paddingBottom: 20}}
           ItemSeparatorComponent={() => {
             return <View style={{height: 5}} />;
@@ -231,6 +292,7 @@ function Home({navigation, route}) {
       return (
         <FlatList
           data={lSongList}
+          // keyExtractor={({item, index}) => index + 'secondTab'}
           style={{padding: 5, flex: 0.7, height: vh(40), marginTop: 50}}
           contentContainerStyle={{paddingBottom: 20}}
           ItemSeparatorComponent={() => {
@@ -266,53 +328,55 @@ function Home({navigation, route}) {
   }
   return (
     <SafeAreaView
-      style={{justifyContent: 'center', backgroundColor: '#9F0514', flex: 1}}>
-      <View style={{flexDirection: 'row', flex: 0.1, height: vh(10)}}>
+      style={{justifyContent: 'center', backgroundColor: '#D9AF81', flex: 1}}>
+      <View
+        style={{
+          flexDirection: 'row',
+          flex: 0.1,
+          height: vh(10),
+          paddingBottom: 5,
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}>
+        <MenuButton
+          name="menu-fold"
+          size={30}
+          style={{
+            justifyContent: 'center',
+            alignSelf: 'center',
+            paddingLeft: 10,
+            paddingTop: 5,
+          }}
+          color="#FFEDDA"
+          onPress={() => {
+            navigation.openDrawer();
+          }}
+        />
         <Text
           style={{
             fontSize: 32,
-            color: '#fff',
+            color: '#FFEDDA',
             fontFamily: 'Amita-Bold',
-            flex: 0.55,
+            flex: 0.95,
             marginLeft: 10,
+            marginTop: 10,
+            justifyContent: 'center',
           }}>
           जानकी
         </Text>
-        <View
+        {/* <SearchButton
+          name="search"
+          size={24}
           style={{
-            flex: 0.5,
-            alignItems: 'center',
-            justifyContent: 'flex-start',
-            marginTop: 5,
-          }}>
-          <TouchableOpacity
-            onPress={() => {
-              setIsSKBSelected(true);
-            }}
-            style={{
-              flexDirection: 'row',
-              borderWidth: 1,
-              borderRadius: 5,
-              padding: 5,
-              marginTop: 5,
-              backgroundColor: '#ffdbac',
-              justifyContent: 'center',
-              alignItems: 'center',
-            }}>
-            <Image
-              source={require('../assets/images/skbLogo.jpeg')}
-              style={{
-                height: 30,
-                width: 30,
-                justifyContent: 'center',
-                marginRight: 10,
-              }}
-            />
-            <Text style={{fontSize: 24, color: '#000', textAlign: 'center'}}>
-              सखी-बहिनपा
-            </Text>
-          </TouchableOpacity>
-        </View>
+            color: '#fff',
+            justifyContent: 'flex-end',
+            alignSelf: 'center',
+          }}
+          onPress={() => {
+            setSearchBar(true);
+            setSearchList(songList.concat(lSongList));
+          }}
+        /> */}
       </View>
       <View
         style={{
@@ -329,28 +393,31 @@ function Home({navigation, route}) {
             flexDirection: 'row',
             justifyContent: 'flex-start',
           }}>
-          <TouchableOpacity
+          <View
             style={{flex: 0.1}}
-            onPress={() => {
-              setUserInfoVisible(true);
-            }}>
+            // onPress={() => {
+            //   setUserInfoVisible(true);
+            // }}
+          >
             <Image
               style={{height: 40, width: 40, borderRadius: 20}}
               source={{uri: dp}}
             />
-          </TouchableOpacity>
+          </View>
           <Text
             style={{
               fontSize: 19,
-              color: '#000',
+              color: '#4C2F10',
               marginLeft: 10,
               flex: 0.5,
               alignSelf: 'center',
             }}>
             {`नमस्कार! ${name}`}
           </Text>
-          {userInfo.email == 'chhayajhacj@gmail.com' ||
-          userInfo.email == 'pratikkashyap.mvp@gmail.com' ? (
+          {!(
+            userInfo.email == 'chhayajhacj@gmail.com' ||
+            userInfo.email == 'pratikkashyap.mvp@gmail.com'
+          ) ? (
             <TouchableOpacity
               onPress={() => {
                 setError('');
@@ -368,117 +435,8 @@ function Home({navigation, route}) {
             </TouchableOpacity>
           ) : null}
         </View>
-
-        {/* <TouchableOpacity
-          style={{
-            flex: 0.5,
-            borderWidth: 1,
-            borderRadius: 5,
-            padding: 5,
-            marginHorizontal: 10,
-            backgroundColor: '#ffdbac',
-            borderColor: 'blue',
-          }}> */}
-        <View style={{height: vh(20)}}>
-          {isSKBSelected ? (
-            <TouchableOpacity
-              style={{height: vh(5), paddingTop: 0}}
-              onPress={() => {
-                setIsSKBSelected(false);
-              }}>
-              <Text
-                style={{fontSize: 24, color: '#fff', fontFamily: 'Amita-Bold'}}>
-                {` < भगवती गीत`}
-              </Text>
-            </TouchableOpacity>
-          ) : (
-            <View
-              style={{
-                flexDirection: 'row',
-                flex: 1,
-                justifyContent: 'center',
-                padding: 5,
-                height: vh(7),
-                marginBottom: 5,
-              }}>
-              <TouchableOpacity
-                onPress={() => {
-                  setIsFirstTab(true);
-                  setIsSecondTab(false);
-                  setIsSKBSelected(false);
-                }}>
-                <View
-                  style={{
-                    width: vw(45),
-                    borderWidth: isFirstTab ? 4 : 2,
-                    height: isFirstTab ? vh(6) : vh(5),
-                    justifyContent: 'center',
-                    marginRight: 5,
-                    backgroundColor: '#f28744',
-                    borderRadius: 15,
-                  }}>
-                  <Text
-                    style={{
-                      fontSize: isFirstTab ? 22 : 20,
-                      color: '#fff',
-                      textAlign: 'center',
-                      fontFamily: 'Amita-Bold',
-                    }}>
-                    भगवती गीत
-                  </Text>
-                </View>
-              </TouchableOpacity>
-              <TouchableOpacity
-                onPress={() => {
-                  setIsFirstTab(false);
-                  setIsSecondTab(true);
-                  setIsSKBSelected(false);
-                }}>
-                <View
-                  style={{
-                    width: vw(45),
-                    borderWidth: isSecondTab ? 4 : 2,
-                    height: isSecondTab ? vh(6) : vh(5),
-                    justifyContent: 'center',
-                    marginLeft: 5,
-                    backgroundColor: '#0d92a1',
-                    borderRadius: 15,
-                  }}>
-                  <Text
-                    style={{
-                      fontSize: isSecondTab ? 22 : 20,
-                      color: '#fff',
-                      textAlign: 'center',
-                      fontFamily: 'Amita-Bold',
-                    }}>
-                    लुरिगरि मैथिलानी
-                  </Text>
-                </View>
-              </TouchableOpacity>
-            </View>
-          )}
-        </View>
-
-        {/* </TouchableOpacity> */}
       </View>
       {renderContent()}
-      {/* {isSKBSelected ? (
-        <SKBWebSite />
-      ) : (
-        <FlatList
-          data={songList}
-          style={{padding: 5, flex: 0.7, height: vh(40), marginTop: 40}}
-          contentContainerStyle={{paddingBottom: 20}}
-          ItemSeparatorComponent={() => {
-            return <View style={{height: 5}} />;
-          }}
-          renderItem={({item, index}) => renderItem(item, index)}
-        />
-      )} */}
-      {/* <UserInfo
-        userInfoVisible={userInfoVisible}
-        onDismiss={() => userInfoVisible(false)}
-      /> */}
       <Modal
         visible={userInfoVisible}
         style={{flex: 1}}

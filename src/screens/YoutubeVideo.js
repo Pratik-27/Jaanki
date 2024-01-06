@@ -1,4 +1,6 @@
-import React, {useCallback, useEffect} from 'react';
+/* eslint-disable react-native/no-inline-styles */
+/* eslint-disable react-hooks/exhaustive-deps */
+import React, {useCallback, useEffect, useState} from 'react';
 import {
   View,
   Text,
@@ -7,17 +9,20 @@ import {
   StatusBar,
   SafeAreaView,
   BackHandler,
+  ActivityIndicator,
 } from 'react-native';
 import Orientation from 'react-native-orientation-locker';
-import YouTube from 'react-native-youtube';
+import YoutubePlayer from 'react-native-youtube-iframe';
 import {vh, vw} from '../assets/styles/main';
 
 function YoutubeVideo({route, navigation}) {
   useEffect(() => {
     Orientation.lockToLandscape();
-    BackHandler.removeEventListener('hardwareBackPress',backButtonHandler );
-
+    BackHandler.removeEventListener('hardwareBackPress', backButtonHandler);
+    // BackHandler.addEventListener('hardwareBackPress', backButtonHandler);
   }, []);
+
+  const [isPortrait, setIsPortrait] = useState(false);
 
   useEffect(() => {
     return () => {
@@ -29,16 +34,31 @@ function YoutubeVideo({route, navigation}) {
     BackHandler.addEventListener('hardwareBackPress', backButtonHandler);
   }, [backButtonHandler]);
 
-  const backButtonHandler = useCallback(() => {
-    navigation.goBack();
-    return false;
-  });
+  const backButtonHandler = () => {
+    setIsPortrait(true);
+    Orientation.lockToPortrait();
+    setTimeout(() => {
+      navigation.goBack();
+    }, 1000);
+    return true;
+  };
 
   const {code} = route.params;
+
+  if (isPortrait) {
+    return (
+      <View
+        style={{justifyContent: 'center', flex: 1, backgroundColor: '#D9AF81'}}>
+        <ActivityIndicator size="large" color="#fff" />
+        {/* <Text style={{textAlign: 'center', color: '#fff'}}>Please wait...</Text> */}
+      </View>
+    );
+  }
+
   return (
     <SafeAreaView style={{backgroundColor: '#000'}}>
       <StatusBar hidden />
-      <YouTube
+      {/* <YouTube
         apiKey="AIzaSyDSsP61Xon1wTjBnNcoA8RCR4DHppd_vI0"
         controls={1}
         showFullscreenButton
@@ -49,8 +69,19 @@ function YoutubeVideo({route, navigation}) {
         // onReady={e => this.setState({ isReady: true })}
         // onChangeState={e => this.setState({ status: e.state })}
         // onChangeQuality={e => this.setState({ quality: e.quality })}
-        // onError={e => this.setState({ error: e.error })}
+        onError={error => console.log('error', error)}
         style={{alignSelf: 'center', height: vw(100), width: vh(85)}}
+      /> */}
+      <YoutubePlayer
+        height={vw(100)}
+        initialPlayerParams={{
+          controls: 1,
+          preventFullScreen: 0,
+          autoplay: 1,
+        }}
+        play={true}
+        videoId={code}
+        // onChangeState={onStateChange}
       />
       {/* <Text>Hi {code}</Text> */}
     </SafeAreaView>

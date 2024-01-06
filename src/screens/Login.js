@@ -1,7 +1,5 @@
-/* eslint-disable react-native/no-inline-styles */
 import {GoogleSigninButton} from '@react-native-google-signin/google-signin';
-import React, {useCallback, useState} from 'react';
-import {useEffect} from 'react';
+import React, {useCallback, useState, useEffect} from 'react';
 import {
   View,
   Dimensions,
@@ -12,9 +10,6 @@ import {
   ActivityIndicator,
   BackHandler,
 } from 'react-native';
-// import {Easing} from 'react-native-reanimated';
-// import auth from '@react-native-firebase/auth';
-import {GoogleSignin} from '@react-native-google-signin/google-signin';
 import {onFacebookButtonPress, onGoogleButtonPress} from '../util/socialSignIn';
 import {vw} from '../assets/styles/main';
 import {useDispatch, useSelector} from 'react-redux';
@@ -26,29 +21,42 @@ function Login({navigation}) {
   const dispatch = useDispatch();
 
   const [loading, setLoading] = useState(false);
+  const spinValue = new Animated.Value(0);
+  const fadeValue = new Animated.Value(0);
+  const [showText, setShowText] = useState(false);
 
-  React.useEffect(() => {
+  useEffect(() => {
     dispatch({type: 'isLoggedin', isLoggedin: false});
     dispatch({type: 'medium', medium: ''});
-    dispatch({
-      type: 'userInfo',
-      userInfo: '',
-    });
+    dispatch({type: 'userInfo', userInfo: ''});
   }, []);
 
-  React.useEffect(() => {
+  useEffect(() => {
     BackHandler.addEventListener('hardwareBackPress', backButtonHandler);
+    return () => {
+      BackHandler.removeEventListener('hardwareBackPress', backButtonHandler);
+    };
   }, [backButtonHandler]);
 
   const backButtonHandler = useCallback(() => {
-    // if (isSKBSelected) {
-    //   setIsSKBSelected(false);
-    //   return true;
-    // } else {
-    //   return true;
-    // }
     BackHandler.exitApp();
-  });
+    return true;
+  }, []);
+
+  useEffect(() => {
+    Animated.timing(spinValue, {
+      toValue: 1,
+      duration: 2000, // Adjust the duration as needed
+      useNativeDriver: true,
+    }).start(() => {
+      setShowText(true); // Show the text after the animation completes
+      Animated.timing(fadeValue, {
+        toValue: 1,
+        duration: 1000, // Adjust the duration as needed
+        useNativeDriver: true,
+      }).start();
+    });
+  }, [spinValue]);
 
   if (loading) {
     return (
@@ -60,122 +68,141 @@ function Login({navigation}) {
     );
   }
 
+  const spin = spinValue.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['0deg', '360deg'],
+  });
+
+  const fade = fadeValue.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0, 1],
+  });
+
   return (
     <View
       style={{flex: 1, backgroundColor: '#ffdbac', justifyContent: 'center'}}>
       <Animated.Image
         style={{
-          height: vw(100),
-          width: vw(100),
+          height: vw(65),
+          width: vw(70),
           alignSelf: 'center',
           marginBottom: 20,
+          paddingHorizontal: 5,
+          transform: [{rotate: spin}],
         }}
+        resizeMode={'contain'}
         source={require('../assets/images/icon.png')}
       />
 
-      <GoogleSigninButton
-        style={{alignSelf: 'center', width: 150, marginTop: 20}}
-        title="Google Sign-In"
-        onPress={() => {
-          setLoading(true);
-          onGoogleButtonPress()
-            .then(res => {
-              dispatch({type: 'isLoggedin', isLoggedin: true});
-              dispatch({type: 'medium', medium: 'google'});
-              dispatch({
-                type: 'userInfo',
-                userInfo: res.additionalUserInfo.profile,
-              });
-              navigation.navigate('HomeNavigator');
-              console.log('Success', res);
-              setLoading(false);
-            })
-            .catch(err => {
-              console.log('Error', err);
-              setLoading(false);
-            });
-        }}
-      />
-      <TouchableOpacity
-        onPress={() => {
-          setLoading(true);
-          onFacebookButtonPress()
-            .then(res => {
-              dispatch({type: 'isLoggedin', isLoggedin: true});
-              dispatch({type: 'medium', medium: 'facebook'});
-              dispatch({
-                type: 'userInfo',
-                userInfo: res.additionalUserInfo.profile,
-              });
-              navigation.navigate('HomeNavigator');
-              console.log('Signed in with Facebook!', res);
-              setLoading(false);
-            })
-            .catch(err => {
-              console.log('Error!', err);
-              setLoading(false);
-            });
-        }}>
-        <View
+      {showText && (
+        <Animated.Text
           style={{
-            marginTop: 20,
-            backgroundColor: '#fff',
-            width: 140,
-            elevation: 3,
-            alignSelf: 'center',
-            flexDirection: 'row',
+            fontSize: 44,
+            color: '#990033',
+            fontFamily: 'Amita-Bold',
+            textAlign: 'center',
+            opacity: fade,
           }}>
-          <Image
-            source={require('../assets/images/fb.png')}
-            resizeMode="contain"
-            style={{height: 30, width: 30, justifyContent: 'center', flex: 0.3}}
-          />
-          <Text
+          जानकी
+        </Animated.Text>
+      )}
+      {showText ? (
+        <>
+          <View
             style={{
-              textAlign: 'center',
-              flex: 0.7,
-              textAlignVertical: 'center',
-              color: 'gray',
-              fontWeight: 'bold',
+              alignSelf: 'center',
+              marginTop: 20,
+              borderRadius: 5,
+              padding: -5,
+              overflow: 'hidden',
+              borderWidth: 0.5,
+              borderColor: 'blue',
+              backgroundColor: '#3b84eb',
             }}>
-            Login
-          </Text>
-        </View>
-      </TouchableOpacity>
-      <TouchableOpacity
-        onPress={() => navigation.navigate('Intro')}
-        style={{
-          backgroundColor: '#9F0514',
-          alignSelf: 'center',
-          borderRadius: 15,
-          borderWidth: 2,
-          borderColor: '#fff',
-          width: vw(50),
-          padding: 10,
-          marginTop: 20,
-        }}>
-        <Text style={{color: '#fff', textAlign: 'center', fontSize: 20}}>
-          ▶️ एप्लिकेशन बुझिऔ
-        </Text>
-      </TouchableOpacity>
-      {/* <Button
-        title="FB Login"
-        
-      /> */}
-      {/* <LoginButton
-        onLoginFinished={(error, result) => {
-          if (error) {
-            console.log('login has error: ' + result.error);
-          } else if (result.isCancelled) {
-            console.log('login is cancelled.');
-          } else {
-            console.log('login is successful.');
-            AccessToken.getCurrentAccessToken().then(data => {
-              console.log(data.accessToken.toString());
-            });
-          }
-        }}
-      /> */}
+            <GoogleSigninButton
+              style={{width: 150}}
+              size={GoogleSigninButton.Size.Standard}
+              color={GoogleSigninButton.Color.Dark}
+              onPress={() => {
+                setLoading(true);
+                onGoogleButtonPress()
+                  .then(res => {
+                    dispatch({type: 'isLoggedin', isLoggedin: true});
+                    dispatch({type: 'medium', medium: 'google'});
+                    dispatch({
+                      type: 'userInfo',
+                      userInfo: res.additionalUserInfo.profile,
+                    });
+                    navigation.navigate('HomeNavigator');
+                    console.log('Success', res);
+                    setLoading(false);
+                  })
+                  .catch(err => {
+                    console.log('Error', err);
+                    setLoading(false);
+                  });
+              }}
+            />
+          </View>
+
+          <TouchableOpacity
+            onPress={() => {
+              setLoading(true);
+              onFacebookButtonPress()
+                .then(res => {
+                  dispatch({type: 'isLoggedin', isLoggedin: true});
+                  dispatch({type: 'medium', medium: 'facebook'});
+                  dispatch({
+                    type: 'userInfo',
+                    userInfo: res.additionalUserInfo.profile,
+                  });
+                  navigation.navigate('HomeNavigator');
+                  console.log('Signed in with Facebook!', res);
+                  setLoading(false);
+                })
+                .catch(err => {
+                  console.log('Error!', err);
+                  setLoading(false);
+                });
+            }}>
+            <View
+              style={{
+                marginTop: 20,
+                backgroundColor: '#fff',
+                width: 150,
+                paddingVertical: 5,
+                elevation: 3,
+                alignSelf: 'center',
+                flexDirection: 'row',
+                borderRadius: 5,
+                borderWidth: 0.5,
+                borderColor: 'gray',
+              }}>
+              <Image
+                source={require('../assets/images/fb.png')}
+                resizeMode="contain"
+                style={{
+                  height: 30,
+                  width: 30,
+                  justifyContent: 'center',
+                  flex: 0.3,
+                }}
+              />
+              <Text
+                style={{
+                  textAlign: 'center',
+                  flex: 0.7,
+                  textAlignVertical: 'center',
+                  color: '#3b47eb',
+                  fontWeight: 'bold',
+                  fontSize: 15,
+                }}>
+                Login
+              </Text>
+            </View>
+          </TouchableOpacity>
+        </>
+      ) : null}
     </View>
   );
 }
