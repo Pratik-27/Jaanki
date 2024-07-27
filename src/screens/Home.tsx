@@ -301,10 +301,10 @@ const Home: React.FC<HomeProps> = ({ navigation, route }) => {
         setError('Wrong Video Link !');
       } else {
         var lmvideoCode = getId(lmLink);
-        if (lmvideoCode.length !== 11) {
+        if (lmvideoCode?.length !== 11) {
           setError('Wrong Video Link !');
         } else {
-          addToFireStoreLM(lmDesc, lmvideoCode).then(() => {
+          addToFireStoreLM(lmDesc, lmvideoCode, '').then(() => {
             setLoading(true);
             setCollectionName('');
             setLMDesc('');

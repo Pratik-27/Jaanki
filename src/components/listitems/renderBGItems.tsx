@@ -2,6 +2,7 @@
 import React from 'react';
 import { Image, Text, TouchableOpacity, View } from 'react-native';
 import { styles } from './styles';
+import { useNavigation } from '@react-navigation/native';
 
 interface Item {
   videoCode: string;
@@ -15,7 +16,10 @@ interface RenderBGItemProps {
   navigation: any;
 }
 
-export const renderBGItem: React.FC<RenderBGItemProps> = ({ item, index, navigation }) => {
+export const renderBGItem: React.FC<RenderBGItemProps> = ({ item, index }) => {
+
+  const navigation = useNavigation()
+
   return (
     <TouchableOpacity
       onPress={() => navigation.navigate('Youtube', { code: item.videoCode })}
